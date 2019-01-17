@@ -66,13 +66,10 @@ $back15 = (Get-Date).AddMinutes(-15)
 $modEntGrps = Get-ADGroup -SearchBase $SearchBase -Properties modified -Filter { modified -gt $back15 } | Select-Object -Property samaccountname,modified
 #If AD groups were found, search for the corresponding entitlement collections in SCCM
 if ($modEntGrps) {
-    Write-Output "The following AD groups have been modified in the last 15 minutes:"
+    Write-Host ($modEntGrps.Count) "AD groups have been modified in the last 15 minutes:"
     Write-Output $modEntGrps
     Write-Output ""
     [System.Collections.ArrayList]$grpList = @()
-    $tSec = Measure-Command { $collections = Get-WmiObject -Namespace "root\SMS\Site_SHS" -Class SMS_Collection -Filter "Name LIKE 'Ent%'" -ComputerName $CMServer | Select-Object -Property Name,CollectionID } | Select-Object -Property TotalSeconds
-    [string]$rSec = [math]::Round($tSec.TotalSeconds,2)
-    Write-Output "Gathered all collections in $rSec seconds..."
     foreach ($grp in ($modEntGrps.SamAccountName)) {
         if ($grp -like "*_NR") {
             $grpD = $grp + "-D"
